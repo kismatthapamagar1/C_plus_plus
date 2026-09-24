@@ -1,91 +1,149 @@
 #include <iostream>
+#include <string>
 
-class Digital_Wallet
+class Digital_wallet
 {
 protected:
     double Balance;
     int Reward_points;
 
 public:
-    Digital_Wallet()
+    Digital_wallet()
     {
         Balance = 0;
         Reward_points = 0;
     }
 
-    virtual void display(int id) = 0;
+    virtual void LoadBalance() = 0;
+    virtual void MakePayment() = 0;
+    virtual void PaymentHistory() = 0;
+    virtual void DisplayTransaction(int id) = 0;
+
+    virtual ~Digital_wallet()
+    {
+    }
 };
 
 
-class Transaction : public Digital_Wallet
+class Transaction : public Digital_wallet
 {
 private:
-    int id[5];
+    int transaction_ID[5];
     double amount[5];
-    int count;
+    std::string type[5];
+
+    static int count;
 
 public:
-    Transaction()
+
+    void LoadBalance()
     {
-        count = 0;
-    }
+        double money;
 
-    void loadBalance(double money)
-    {
-        Balance = Balance + money;
-    }
+        std::cout << "Enter amount to load: ";
+        std::cin >> money;
 
-    void makePayment(int transaction_id, double money)
-    {
-        if (money > Balance)
+        if (money > 0)
         {
-            std::cout << "Insufficient balance!\n";
-            return;
-        }
+            Balance = Balance + money;
 
-        Balance = Balance - money;
-
-        if (money > 2000)
-        {
-            Reward_points = Reward_points + 50;
-        }
-
-        if (count < 5)
-        {
-            id[count] = transaction_id;
+            transaction_ID[count] = count + 1;
             amount[count] = money;
+            type[count] = "Load Balance";
+
             count++;
+
+            std::cout << "Balance loaded successfully.\n";
+            std::cout << "Current Balance = "
+                      << Balance << std::endl;
         }
         else
         {
-            for (int i = 0; i < 5; i++)
-            {
-                id[i] = id[i + 1];
-                amount[i] = amount[i + 1];
-            }
-
-            id[5] = transaction_id;
-            amount[5] = money;
-        }
-
-        if (Reward_points >= 1000)
-        {
-            Balance = Balance + 10;
-            Reward_points = Reward_points - 1000;
+            std::cout << "Invalid amount.\n";
         }
     }
 
-    void display(int transaction_id)
+
+    void MakePayment()
+    {
+        double money;
+
+        std::cout << "Enter payment amount: ";
+        std::cin >> money;
+
+        if (money <= Balance && money > 0)
+        {
+            Balance = Balance - money;
+
+            // Payment greater than 2000 earns 50 points
+            if (money > 2000)
+            {
+                Reward_points = Reward_points + 50;
+            }
+
+            // Every 1000 points gives 10 balance
+            if (Reward_points >= 1000)
+            {
+                Balance = Balance + 10;
+                Reward_points = Reward_points - 1000;
+            }
+
+            transaction_ID[count] = count + 1;
+            amount[count] = money;
+            type[count] = "Payment";
+
+            count++;
+
+            std::cout << "Payment successful.\n";
+            std::cout << "Current Balance = "
+                      << Balance << std::endl;
+
+            std::cout << "Reward Points = "
+                      << Reward_points << std::endl;
+        }
+        else
+        {
+            std::cout << "Insufficient balance or invalid amount.\n";
+        }
+    }
+
+
+    void PaymentHistory()
+    {
+        std::cout << "\n----- Payment History -----\n";
+
+        for (int i = 0; i < count; i++)
+        {
+            std::cout << "Transaction ID: "
+                      << transaction_ID[i] << std::endl;
+
+            std::cout << "Amount: "
+                      << amount[i] << std::endl;
+
+            std::cout << "Type: "
+                      << type[i] << std::endl;
+
+            std::cout << "---------------------------\n";
+        }
+    }
+
+
+    void DisplayTransaction(int id)
     {
         for (int i = 0; i < count; i++)
         {
-            if (id[i] == transaction_id)
+            if (transaction_ID[i] == id)
             {
-                std::cout << "\nTransaction ID = " << id[i] << "\n";
-                std::cout << "Amount = " << amount[i] << "\n";
-                std::cout << "Balance = " << Balance << "\n";
-                std::cout << "Reward Points = "
-                          << Reward_points << "\n";
+                std::cout << "\n----- Transaction Details -----\n";
+
+                std::cout << "Transaction ID: "
+                          << transaction_ID[i] << std::endl;
+
+                std::cout << "Amount: "
+                          << amount[i] << std::endl;
+
+                std::cout << "Type: "
+                          << type[i] << std::endl;
 
                 return;
             }
@@ -93,32 +151,30 @@ public:
 
         std::cout << "Transaction not found.\n";
     }
-
-    void showWallet()
-    {
-        std::cout << "\nBalance = " << Balance << "\n";
-        std::cout << "Reward Points = "
-                  << Reward_points << "\n";
-    }
 };
+
+
+int Transaction::count = 0;
 
 
 int main()
 {
-    Transaction wallet;
+    Transaction obj;
 
-    wallet.loadBalance(10000);
+    Digital_wallet *wallet = &obj;
 
-    wallet.makePayment(101, 1500);
-    wallet.makePayment(102, 2500);
-    wallet.makePayment(103, 3000);
+    wallet->LoadBalance();
 
-    wallet.showWallet();
+    wallet->MakePayment();
 
-    // Runtime polymorphism
-    Digital_Wallet *ptr = &wallet;
+    wallet->PaymentHistory();
 
-    ptr->display(102);
+    int id;
+
+    std::cout << "\nEnter Transaction ID to search: ";
+    std::cin >> id;
+
+    wallet->DisplayTransaction(id);
 
     return 0;
 }
