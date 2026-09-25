@@ -38,7 +38,7 @@ public:
         return temp;
     }
 
-    friend std::ostream& operator<<(std::ostream& out, TimeZone t);
+    friend std::ostream& operator<<(std::ostream& out, TimeZone t); //imp 
 };
 
 std::ostream& operator<<(std::ostream& out, TimeZone t)
